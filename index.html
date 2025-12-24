@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Hand & Foot Pro</title>
+    <link rel="apple-touch-icon" href="https://fav.farm/🃏">
+    <style>
+        :root { --primary: #2c3e50; --secondary: #e67e22; --success: #27ae60; --bg: #f8f9fa; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--primary); }
+        .container { width: 100%; max-width: 800px; margin: auto; }
+        .meld-banner { background: var(--primary); color: white; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        .meld-pts { color: #f1c40f; font-size: 1.6rem; display: block; font-weight: 800; }
+        .setup-row { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 10px; }
+        .btn-toggle { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: white; font-weight: bold; }
+        .btn-toggle.active { background: var(--secondary); color: white; border-color: var(--secondary); }
+        .scoreboard { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+        .team-card { background: white; border-radius: 15px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .input-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #f9f9f9; }
+        input[type="number"], select { width: 80px; padding: 10px; border-radius: 6px; border: 1px solid #ddd; text-align: center; font-size: 16px !important; }
+        .calc-total { font-weight: 800; color: var(--success); font-size: 1.2rem; }
+        .history-section { background: white; border-radius: 15px; padding: 15px; margin-top: 25px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 5px; text-align: center; border-bottom: 1px solid #eee; }
+        .grand-total-row { background: var(--success); color: white; font-weight: 800; }
+        .btn-post { background: var(--success); color: white; width: 100%; padding: 16px; border-radius: 10px; border: none; font-weight: 800; margin-top: 15px; font-size: 1rem; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="meld-banner">
+        Round <span id="displayRound">1</span> Meld Requirement
+        <span class="meld-pts" id="meldRequired">50</span>
+    </div>
+
+    <div class="setup-row">
+        <button id="btn2" onclick="setTeams(2)" class="btn-toggle active">2 Teams</button>
+        <button id="btn3" onclick="setTeams(3)" class="btn-toggle">3 Teams</button>
+        <select id="roundSelect" onchange="updateMeld()">
+            <option value="1">Round 1</option>
+            <option value="2">Round 2</option>
+            <option value="3">Round 3</option>
+            <option value="4">Round 4</option>
+        </select>
+    </div>
+
+    <div id="scoreboard" class="scoreboard">
+        <div class="team-card" id="card0">
+            <input type="text" value="Team 1" style="border:none; font-weight:800; font-size:1.1rem; color:var(--secondary); width:100%; margin-bottom:10px;">
+            <div class="input-group"><label>Perfect Deals (100)</label><select class="perfect" onchange="doCalc()"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+            <div class="input-group"><label>Went Out (100)</label><select class="out" onchange="doCalc()"><option value="0">No</option><option value="100">Yes</option></select></div>
+            <div class="input-group"><label>Red 3s (100)</label><input type="number" inputmode="numeric" class="red3" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div class="input-group"><label>Pure (500)</label><input type="number" inputmode="numeric" class="pure" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div class="input-group"><label>Mixed (300)</label><input type="number" inputmode="numeric" class="mixed" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div class="input-group"><label>Card Pts (+/-)</label><input type="number" inputmode="numeric" class="cards" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div style="text-align:right; margin-top:10px; font-weight:bold;">Round Score: <span class="calc-total">0</span></div>
+        </div>
+
+        <div class="team-card" id="card1">
+            <input type="text" value="Team 2" style="border:none; font-weight:800; font-size:1.1rem; color:var(--secondary); width:100%; margin-bottom:10px;">
+            <div class="input-group"><label>Perfect Deals</label><select class="perfect" onchange="doCalc()"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+            <div class="input-group"><label>Went Out</label><select class="out" onchange="doCalc()"><option value="0">No</option><option value="100">Yes</option></select></div>
+            <div class="input-group"><label>Red 3s</label><input type="number" inputmode="numeric" class="red3" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div class="input-group"><label>Pure</label><input type="number" inputmode="numeric" class="pure" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div class="input-group"><label>Mixed</label><input type="number" inputmode="numeric" class="mixed" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div class="input-group"><label>Card Pts</label><input type="number" inputmode="numeric" class="cards" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div style="text-align:right; margin-top:10px; font-weight:bold;">Round Score: <span class="calc-total">0</span></div>
+        </div>
+
+        <div class="team-card hidden" id="card2">
+            <input type="text" value="Team 3" style="border:none; font-weight:800; font-size:1.1rem; color:var(--secondary); width:100%; margin-bottom:10px;">
+            <div class="input-group"><label>Perfect Deals</label><select class="perfect" onchange="doCalc()"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+            <div class="input-group"><label>Went Out</label><select class="out" onchange="doCalc()"><option value="0">No</option><option value="100">Yes</option></select></div>
+            <div class="input-group"><label>Red 3s</label><input type="number" inputmode="numeric" class="red3" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div class="input-group"><label>Pure</label><input type="number" inputmode="numeric" class="pure" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div class="input-group"><label>Mixed</label><input type="number" inputmode="numeric" class="mixed" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div class="input-group"><label>Card Pts</label><input type="number" inputmode="numeric" class="cards" value="0" oninput="doCalc()" onclick="this.select()"></div>
+            <div style="text-align:right; margin-top:10px; font-weight:bold;">Round Score: <span class="calc-total">0</span></div>
+        </div>
+    </div>
+
+    <button class="btn-post" onclick="saveRound()">Post Round Score</button>
+
+    <div class="history-section">
+        <table id="historyTable">
+            <thead><tr><th>Round</th><th>T1</th><th>T2</th><th id="hCol3" class="hidden">T3</th></tr></thead>
+            <tbody id="historyBody"></tbody>
+            <tfoot>
+                <tr class="grand-total-row"><td>TOTAL</td><td id="total0">0</td><td id="total1">0</td><td id="total2" class="hidden">0</td></tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<script>
+    let teamCount = 2;
+    let gameData = { 1: [], 2: [], 3: [], 4: [] };
+    const melds = { 1: 50, 2: 90, 3: 120, 4: 150 };
+
+    function doCalc() {
+        for (let i = 0; i < 3; i++) {
+            const card = document.getElementById(`card${i}`);
+            const p = (parseInt(card.querySelector('.perfect').value) || 0) * 100;
+            const o = (parseInt(card.querySelector('.out').value) || 0);
+            const r3 = (parseInt(card.querySelector('.red3').value) || 0) * 100;
+            const pure = (parseInt(card.querySelector('.pure').value) || 0) * 500;
+            const mix = (parseInt(card.querySelector('.mixed').value) || 0) * 300;
+            const c = (parseInt(card.querySelector('.cards').value) || 0);
+            card.querySelector('.calc-total').innerText = (p + o + r3 + pure + mix + c);
+        }
+    }
+
+    function setTeams(n) {
+        teamCount = n;
+        document.getElementById('card2').classList.toggle('hidden', n === 2);
+        document.getElementById('hCol3').classList.toggle('hidden', n === 2);
+        document.getElementById('total2').classList.toggle('hidden', n === 2);
+        document.getElementById('btn2').classList.toggle('active', n === 2);
+        document.getElementById('btn3').classList.toggle('active', n === 3);
+        renderHistory();
+    }
+
+    function updateMeld() {
+        const r = document.getElementById('roundSelect').value;
+        document.getElementById('displayRound').innerText = r;
+        document.getElementById('meldRequired').innerText = melds[r];
+    }
+
+    function saveRound() {
+        const r = document.getElementById('roundSelect').value;
+        const roundScores = [];
+        for (let i = 0; i < teamCount; i++) {
+            roundScores.push(parseInt(document.getElementById(`card${i}`).querySelector('.calc-total').innerText));
+        }
+        gameData[r] = roundScores;
+        renderHistory();
+        document.querySelectorAll('input[type="number"]').forEach(i => i.value = 0);
+        document.querySelectorAll('select.out, select.perfect').forEach(s => s.selectedIndex = 0);
+        doCalc();
+        if(r < 4) { document.getElementById('roundSelect').value = parseInt(r) + 1; updateMeld(); }
+    }
+
+    function renderHistory() {
+        const body = document.getElementById('historyBody');
+        body.innerHTML = '';
+        let totals = [0, 0, 0];
+        for (let r = 1; r <= 4; r++) {
+            if (gameData[r].length > 0) {
+                let row = `<tr><td>R${r}</td>`;
+                for (let i = 0; i < teamCount; i++) {
+                    const s = gameData[r][i] || 0;
+                    row += `<td>${s}</td>`;
+                    totals[i] += s;
+                }
+                row += `</tr>`;
+                body.innerHTML += row;
+            }
+        }
+        for (let i = 0; i < 3; i++) document.getElementById(`total${i}`).innerText = totals[i].toLocaleString();
+    }
+</script>
+</body>
+</html>
